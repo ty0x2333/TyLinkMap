@@ -1,4 +1,5 @@
-SESSION_PREFIX_PATH = '# Path: '
+PREFIX_PATH = '# Path: '
+PREFIX_ARCH = '# Arch: '
 
 
 class LinkMap(object):
@@ -9,5 +10,7 @@ class LinkMap(object):
     def paring(self, filename):
         with open(filename, 'r') as f:
             line = f.readline()
-            if line.startswith(SESSION_PREFIX_PATH):
-                self.path = line[len(SESSION_PREFIX_PATH):]
+            if line.startswith(PREFIX_PATH):
+                self.path = line[len(PREFIX_PATH):]
+            elif line.startswith(PREFIX_ARCH):
+                self.arch = line[len(PREFIX_ARCH):]
