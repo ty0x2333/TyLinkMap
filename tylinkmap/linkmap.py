@@ -1,8 +1,9 @@
 import re
 import os
-PREFIX_PATH = '# Path: '
-PREFIX_ARCH = '# Arch: '
-PREFIX_OBJECT_FILES = '# Object files:'
+BLOCK_PATH = 'Path: '
+BLOCK_ARCH = 'Arch: '
+BLOCK_OBJECT_FILES = 'Object files:'
+BLOCK_SESSION = 'Sections:'
 
 
 class FileObject(object):
@@ -36,7 +37,7 @@ class LinkMap(object):
                 if self.__paring_block(line):
                     continue
 
-                if self.last_block == PREFIX_OBJECT_FILES:
+                if self.last_block == BLOCK_OBJECT_FILES:
                     compiler = re.compile(r"\[\s*(?P<num>\d*)\]\s*(?P<content>.*)")
                     content_compiler = re.compile(r"(?P<path>.*)\((?P<filename>.*)\)")
                     match = compiler.match(line)
@@ -58,16 +59,26 @@ class LinkMap(object):
 
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
                     print FileObject(module=module, number=num, filename=filename)
+                elif self.last_block == BLOCK_SESSION:
+                    pass
 
     def __paring_block(self, line):
-        if line.startswith(PREFIX_PATH):
-            self.path = line[len(PREFIX_PATH):].strip()
-            self.last_block = PREFIX_PATH
-        elif line.startswith(PREFIX_ARCH):
-            self.arch = line[len(PREFIX_ARCH):]
-            self.last_block = PREFIX_ARCH
-        elif line.startswith(PREFIX_OBJECT_FILES):
-            self.last_block = PREFIX_OBJECT_FILES
-        else:
+        compiler = re.compile(r"\s*#\s*(?P<block>.*)")
+        match = compiler.match(line)
+        if not match:
             return False
+
+        block = match.group('block')
+        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION]
+        for b in blocks:
+            if block != b:
+                continue
+
+            self.last_block = b
+            if b == BLOCK_PATH:
+                self.path = line[len(BLOCK_PATH):].strip()
+            elif b == BLOCK_ARCH:
+                self.arch = line[len(BLOCK_ARCH):]
+            break
+
         return True
