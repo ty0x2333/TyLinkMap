@@ -9,6 +9,12 @@ def main(argv=None):
 
     link_map = LinkMap()
     link_map.paring(args.file)
+    for obj in link_map.file_objs:
+        print obj
+    for section in link_map.sections:
+        print section
+    for symbol in link_map.symbols:
+        print symbol
 
 if __name__ == '__main__':
     main()

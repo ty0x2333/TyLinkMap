@@ -5,6 +5,7 @@ BLOCK_ARCH = 'Arch'
 BLOCK_OBJECT_FILES = 'Object files'
 BLOCK_SESSION = 'Sections'
 BLOCK_SYMBOLS = 'Symbols'
+BLOCK_DEAD_STRIPPED_SYMBOLS = 'Dead Stripped Symbols'
 
 
 class FileObject(object):
@@ -24,6 +25,20 @@ class Section(object):
         self.segment = segment
         self.section = section
 
+    def __str__(self):
+        return "%s %s %s %s" % (self.address, self.size, self.segment, self.section)
+
+
+class Symbol(object):
+    def __init__(self, address, size, file_number, name):
+        self.address = address
+        self.size = size
+        self.file_number = file_number
+        self.name = name
+
+    def __str__(self):
+        return "%s %s [%d] %s" % (self.address, self.size, self.file_number, self.name)
+
 
 class LinkMap(object):
     def __init__(self):
@@ -32,6 +47,7 @@ class LinkMap(object):
         self.last_block = ''
         self.file_objs = []
         self.sections = []
+        self.symbols = []
 
     @property
     def target_name(self):
@@ -68,7 +84,6 @@ class LinkMap(object):
                         filename = os.path.basename(content)
 
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
-                    print FileObject(module=module, number=num, filename=filename)
                 elif self.last_block == BLOCK_SESSION:
                     compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
                                           r"(?P<segment>\w+)\s+(?P<section>\w+)")
@@ -77,6 +92,16 @@ class LinkMap(object):
                         section = Section(address=match.group('address'), size=match.group('size'),
                                           segment=match.group('segment'), section=match.group('section'))
                         self.sections.append(section)
+                    else:
+                        print 'Parse error: %s' % line
+                elif self.last_block == BLOCK_SYMBOLS:
+                    compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
+                                          r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
+                    match = compiler.match(line)
+                    if match:
+                        symbol = Symbol(address=match.group('address'), size=match.group('size'),
+                                        file_number=int(match.group('file')), name=match.group('name'))
+                        self.symbols.append(symbol)
                     else:
                         print 'Parse error: %s' % line
 
@@ -88,7 +113,7 @@ class LinkMap(object):
 
         block = match.group('block').strip()
         value = match.group('value').strip()
-        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION, BLOCK_SYMBOLS]
+        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION, BLOCK_SYMBOLS, BLOCK_DEAD_STRIPPED_SYMBOLS]
         for b in blocks:
             if block != b:
                 continue
