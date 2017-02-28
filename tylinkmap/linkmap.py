@@ -1,9 +1,9 @@
 import re
 import os
-BLOCK_PATH = 'Path: '
-BLOCK_ARCH = 'Arch: '
-BLOCK_OBJECT_FILES = 'Object files:'
-BLOCK_SESSION = 'Sections:'
+BLOCK_PATH = 'Path'
+BLOCK_ARCH = 'Arch'
+BLOCK_OBJECT_FILES = 'Object files'
+BLOCK_SESSION = 'Sections'
 
 
 class FileObject(object):
@@ -63,12 +63,13 @@ class LinkMap(object):
                     pass
 
     def __paring_block(self, line):
-        compiler = re.compile(r"\s*#\s*(?P<block>.*)")
+        compiler = re.compile(r"\s*#\s*(?P<block>[\w\s]*):?\s*(?P<value>.*)")
         match = compiler.match(line)
         if not match:
             return False
 
-        block = match.group('block')
+        block = match.group('block').strip()
+        value = match.group('value').strip()
         blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION]
         for b in blocks:
             if block != b:
@@ -76,9 +77,9 @@ class LinkMap(object):
 
             self.last_block = b
             if b == BLOCK_PATH:
-                self.path = line[len(BLOCK_PATH):].strip()
+                self.path = value
             elif b == BLOCK_ARCH:
-                self.arch = line[len(BLOCK_ARCH):]
+                self.arch = value
             break
 
         return True
