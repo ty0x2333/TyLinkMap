@@ -4,6 +4,7 @@ BLOCK_PATH = 'Path'
 BLOCK_ARCH = 'Arch'
 BLOCK_OBJECT_FILES = 'Object files'
 BLOCK_SESSION = 'Sections'
+BLOCK_SYMBOLS = 'Symbols'
 
 
 class FileObject(object):
@@ -16,12 +17,21 @@ class FileObject(object):
         return "[%d] %s %s" % (self.number, self.filename, self.module)
 
 
+class Section(object):
+    def __init__(self, address, size, segment, section):
+        self.address = address
+        self.size = size
+        self.segment = segment
+        self.section = section
+
+
 class LinkMap(object):
     def __init__(self):
         self.path = ''
         self.arch = ''
         self.last_block = ''
         self.file_objs = []
+        self.sections = []
 
     @property
     def target_name(self):
@@ -60,7 +70,15 @@ class LinkMap(object):
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
                     print FileObject(module=module, number=num, filename=filename)
                 elif self.last_block == BLOCK_SESSION:
-                    pass
+                    compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
+                                          r"(?P<segment>\w+)\s+(?P<section>\w+)")
+                    match = compiler.match(line)
+                    if match:
+                        section = Section(address=match.group('address'), size=match.group('size'),
+                                          segment=match.group('segment'), section=match.group('section'))
+                        self.sections.append(section)
+                    else:
+                        print 'Parse error: %s' % line
 
     def __paring_block(self, line):
         compiler = re.compile(r"\s*#\s*(?P<block>[\w\s]*):?\s*(?P<value>.*)")
@@ -70,7 +88,7 @@ class LinkMap(object):
 
         block = match.group('block').strip()
         value = match.group('value').strip()
-        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION]
+        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION, BLOCK_SYMBOLS]
         for b in blocks:
             if block != b:
                 continue
