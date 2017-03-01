@@ -58,12 +58,14 @@ class LinkMap(object):
                                             r"(?P<segment>\w+)\s+(?P<section>\w+)")
         self._symbol_compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
                                            r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
+        self.__module_map = {}
 
     @property
     def target_name(self):
         return os.path.basename(self.path)
 
     def paring(self, filename):
+        self.__module_map = {}
         with open(filename, 'r') as f:
             while True:
                 line = f.readline().strip()
@@ -92,6 +94,7 @@ class LinkMap(object):
                         filename = os.path.basename(content)
 
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
+                    self.__module_map[num] = module
                 elif self.last_block == BLOCK_SESSION:
                     match = self._session_compiler.match(line)
                     if match:
@@ -134,6 +137,5 @@ class LinkMap(object):
         modules = defaultdict(int)
 
         for symbol in self.symbols:
-            obj = next(obj for obj in self.file_objs if obj.number == symbol.file_number)
-            modules[obj.module] += symbol.size
+            modules[self.__module_map[symbol.file_number]] += symbol.size
         return modules
