@@ -10,8 +10,6 @@ BLOCK_SESSION = 'Sections'
 BLOCK_SYMBOLS = 'Symbols'
 BLOCK_DEAD_STRIPPED_SYMBOLS = 'Dead Stripped Symbols'
 
-SUFFIXES = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
-
 
 class FileObject(object):
     def __init__(self, module, number=0, filename=''):
@@ -139,14 +137,3 @@ class LinkMap(object):
             obj = next(obj for obj in self.file_objs if obj.number == symbol.file_number)
             modules[obj.module] += symbol.size
         return modules
-
-    @staticmethod
-    def human_size(nbytes):
-        if nbytes == 0: return '0 B'
-        size = nbytes
-        i = 0
-        while size >= 1024 and i < len(SUFFIXES) - 1:
-            size /= 1024.
-            i += 1
-        f = ('%.2f' % size).rstrip('0').rstrip('.')
-        return '%s %s' % (f, SUFFIXES[i])

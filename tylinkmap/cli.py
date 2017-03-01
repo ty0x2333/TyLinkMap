@@ -16,6 +16,19 @@ class Timer(object):
         self.m_secs = self.secs * 1000  # millisecs
         logging.debug('elapsed time: %d ms' % self.m_secs)
 
+SUFFIXES = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+
+
+def human_size(nbytes):
+    if nbytes == 0: return '0 B'
+    size = nbytes
+    i = 0
+    while size >= 1024 and i < len(SUFFIXES) - 1:
+        size /= 1024.
+        i += 1
+    f = ('%.2f' % size).rstrip('0').rstrip('.')
+    return '%s %s' % (f, SUFFIXES[i])
+
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='link map tool')
@@ -35,7 +48,7 @@ def main(argv=None):
         modules = [(k, v) for k, v in link_map.analyze().items()]
         modules.sort(key=lambda tup: tup[1], reverse=args.desc)
     logging.info('Result')
-    logging.info(tabulate([(k, link_map.human_size(v)) for k, v in modules],
+    logging.info(tabulate([(k, human_size(v)) for k, v in modules],
                           headers=['Module', 'Size'],
                           tablefmt='orgtbl'))
     # for obj in link_map.file_objs:
