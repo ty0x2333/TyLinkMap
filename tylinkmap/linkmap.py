@@ -1,5 +1,7 @@
 import re
 import os
+from collections import defaultdict
+
 BLOCK_PATH = 'Path'
 BLOCK_ARCH = 'Arch'
 BLOCK_OBJECT_FILES = 'Object files'
@@ -128,6 +130,15 @@ class LinkMap(object):
             break
 
         return True
+
+    def analyze(self):
+        modules = defaultdict(int)
+
+        for symbol in self.symbols:
+            obj = next(obj for obj in self.file_objs if obj.number == symbol.file_number)
+            modules[obj.module] += symbol.size
+        for m, s in modules.items():
+            print m, self.human_size(s)
 
     @staticmethod
     def human_size(nbytes):
