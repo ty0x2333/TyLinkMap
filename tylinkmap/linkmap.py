@@ -51,6 +51,13 @@ class LinkMap(object):
         self.file_objs = []
         self.sections = []
         self.symbols = []
+        self._block_compiler = re.compile(r"\s*#\s*(?P<block>[\w\s]*):?\s*(?P<value>.*)")
+        self._obj_compiler = re.compile(r"\[\s*(?P<num>\d*)\]\s*(?P<content>.*)")
+        self._obj_content_compiler = re.compile(r"(?P<path>.*)\((?P<filename>.*)\)")
+        self._session_compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
+                                            r"(?P<segment>\w+)\s+(?P<section>\w+)")
+        self._symbol_compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
+                                           r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
 
     @property
     def target_name(self):
@@ -67,9 +74,7 @@ class LinkMap(object):
                     continue
 
                 if self.last_block == BLOCK_OBJECT_FILES:
-                    compiler = re.compile(r"\[\s*(?P<num>\d*)\]\s*(?P<content>.*)")
-                    content_compiler = re.compile(r"(?P<path>.*)\((?P<filename>.*)\)")
-                    match = compiler.match(line)
+                    match = self._obj_compiler.match(line)
                     if not match:
                         # print 'Warning: can not match object file!'
                         continue
@@ -77,7 +82,7 @@ class LinkMap(object):
                     num = int(match.group('num'))
                     content = match.group('content')
                     # filename
-                    content_match = content_compiler.match(content)
+                    content_match = self._obj_content_compiler.match(content)
                     module = self.target_name
                     if content_match:
                         filename = content_match.group('filename')
@@ -88,9 +93,7 @@ class LinkMap(object):
 
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
                 elif self.last_block == BLOCK_SESSION:
-                    compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
-                                          r"(?P<segment>\w+)\s+(?P<section>\w+)")
-                    match = compiler.match(line)
+                    match = self._session_compiler.match(line)
                     if match:
                         section = Section(address=match.group('address'), size=match.group('size'),
                                           segment=match.group('segment'), section=match.group('section'))
@@ -98,9 +101,7 @@ class LinkMap(object):
                     else:
                         logging.warning('Parse error: %s' % line)
                 elif self.last_block == BLOCK_SYMBOLS:
-                    compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
-                                          r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
-                    match = compiler.match(line)
+                    match = self._symbol_compiler.match(line)
                     if match:
                         symbol = Symbol(address=match.group('address'), size=int(match.group('size'), 16),
                                         file_number=int(match.group('file')), name=match.group('name'))
@@ -109,8 +110,7 @@ class LinkMap(object):
                         logging.warning('Parse error: %s' % line)
 
     def __paring_block(self, line):
-        compiler = re.compile(r"\s*#\s*(?P<block>[\w\s]*):?\s*(?P<value>.*)")
-        match = compiler.match(line)
+        match = self._block_compiler.match(line)
         if not match:
             return False
 
