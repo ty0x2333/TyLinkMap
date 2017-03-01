@@ -10,6 +10,8 @@ BLOCK_SESSION = 'Sections'
 BLOCK_SYMBOLS = 'Symbols'
 BLOCK_DEAD_STRIPPED_SYMBOLS = 'Dead Stripped Symbols'
 
+BLOCKS = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION, BLOCK_SYMBOLS, BLOCK_DEAD_STRIPPED_SYMBOLS]
+
 
 class FileObject(object):
     def __init__(self, module, number=0, filename=''):
@@ -119,8 +121,7 @@ class LinkMap(object):
 
         block = match.group('block').strip()
         value = match.group('value').strip()
-        blocks = [BLOCK_PATH, BLOCK_ARCH, BLOCK_OBJECT_FILES, BLOCK_SESSION, BLOCK_SYMBOLS, BLOCK_DEAD_STRIPPED_SYMBOLS]
-        for b in blocks:
+        for b in BLOCKS:
             if block != b:
                 continue
 
