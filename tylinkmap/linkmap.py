@@ -1,6 +1,7 @@
 import re
 import os
 from collections import defaultdict
+import logging
 
 BLOCK_PATH = 'Path'
 BLOCK_ARCH = 'Arch'
@@ -97,7 +98,7 @@ class LinkMap(object):
                                           segment=match.group('segment'), section=match.group('section'))
                         self.sections.append(section)
                     else:
-                        print 'Parse error: %s' % line
+                        logging.warning('Parse error: %s' % line)
                 elif self.last_block == BLOCK_SYMBOLS:
                     compiler = re.compile(r"\s*(?P<address>0x[0-9A-Za-z]*)\s+(?P<size>0x[0-9A-Za-z]*)\s+"
                                           r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
@@ -107,7 +108,7 @@ class LinkMap(object):
                                         file_number=int(match.group('file')), name=match.group('name'))
                         self.symbols.append(symbol)
                     else:
-                        print 'Parse error: %s' % line
+                        logging.warning('Parse error: %s' % line)
 
     def __paring_block(self, line):
         compiler = re.compile(r"\s*#\s*(?P<block>[\w\s]*):?\s*(?P<value>.*)")

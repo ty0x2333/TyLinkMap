@@ -1,13 +1,11 @@
 import argparse
 from .linkmap import LinkMap
 from tabulate import tabulate
+import logging
 import time
 
 
 class Timer(object):
-    def __init__(self, verbose=False):
-        self.verbose = verbose
-
     def __enter__(self):
         self.start = time.time()
         return self
@@ -16,26 +14,30 @@ class Timer(object):
         self.end = time.time()
         self.secs = self.end - self.start
         self.m_secs = self.secs * 1000  # millisecs
-        if self.verbose:
-            print 'elapsed time: %d ms' % self.m_secs
+        logging.debug('elapsed time: %d ms' % self.m_secs)
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='link map tool')
     parser.add_argument('file', help='link map file')
     parser.add_argument('--desc', action="store_true", help='according to the output module size descending')
+    parser.add_argument('-v', '--verbose', action="store_true", dest="verbose", help="show more debugging information")
     args = parser.parse_args(argv)
 
+    logging.basicConfig(level=logging.DEBUG if args.verbose else logging.INFO, format='%(message)s')
+
     link_map = LinkMap()
-    print 'Parsing'
-    with Timer(True) as t:
+    logging.debug('Parsing...')
+    with Timer() as t:
         link_map.paring(args.file)
-    print 'Analyze'
-    with Timer(True) as t:
+    logging.debug('Analyzing...')
+    with Timer() as t:
         modules = [(k, v) for k, v in link_map.analyze().items()]
         modules.sort(key=lambda tup: tup[1], reverse=args.desc)
-    print 'Result'
-    print tabulate([(k, link_map.human_size(v)) for k, v in modules], headers=['Module', 'Size'], tablefmt='orgtbl')
+    logging.info('Result')
+    logging.info(tabulate([(k, link_map.human_size(v)) for k, v in modules],
+                          headers=['Module', 'Size'],
+                          tablefmt='orgtbl'))
     # for obj in link_map.file_objs:
     #     print obj
     # for section in link_map.sections:
