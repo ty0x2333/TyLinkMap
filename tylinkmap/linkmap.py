@@ -7,6 +7,8 @@ BLOCK_SESSION = 'Sections'
 BLOCK_SYMBOLS = 'Symbols'
 BLOCK_DEAD_STRIPPED_SYMBOLS = 'Dead Stripped Symbols'
 
+SUFFIXES = ['B', 'KB', 'MB', 'GB', 'TB', 'PB']
+
 
 class FileObject(object):
     def __init__(self, module, number=0, filename=''):
@@ -99,7 +101,7 @@ class LinkMap(object):
                                           r"\[\s*(?P<file>\d+)\s*\]\s+(?P<name>.+)")
                     match = compiler.match(line)
                     if match:
-                        symbol = Symbol(address=match.group('address'), size=match.group('size'),
+                        symbol = Symbol(address=match.group('address'), size=int(match.group('size'), 16),
                                         file_number=int(match.group('file')), name=match.group('name'))
                         self.symbols.append(symbol)
                     else:
@@ -126,3 +128,14 @@ class LinkMap(object):
             break
 
         return True
+
+    @staticmethod
+    def human_size(nbytes):
+        if nbytes == 0: return '0 B'
+        size = nbytes
+        i = 0
+        while size >= 1024 and i < len(SUFFIXES) - 1:
+            size /= 1024.
+            i += 1
+        f = ('%.2f' % size).rstrip('0').rstrip('.')
+        return '%s %s' % (f, SUFFIXES[i])
