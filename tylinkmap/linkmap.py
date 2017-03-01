@@ -67,10 +67,10 @@ class LinkMap(object):
     def paring(self, filename):
         self.__module_map = {}
         with open(filename, 'r') as f:
-            while True:
-                line = f.readline().strip()
+            for l in f:
+                line = l.strip()
                 if not line:
-                    break
+                    continue
 
                 if self.__paring_block(line):
                     continue
