@@ -137,8 +137,7 @@ class LinkMap(object):
         for symbol in self.symbols:
             obj = next(obj for obj in self.file_objs if obj.number == symbol.file_number)
             modules[obj.module] += symbol.size
-        for m, s in modules.items():
-            print m, self.human_size(s)
+        return modules
 
     @staticmethod
     def human_size(nbytes):
