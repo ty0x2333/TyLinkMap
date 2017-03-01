@@ -48,10 +48,11 @@ def main(argv=None):
         modules = [(k, v) for k, v in link_map.analyze().items()]
         modules.sort(key=lambda tup: tup[1], reverse=args.desc)
     logging.debug('Result')
-    logging.info(tabulate([(k, human_size(v)) for k, v in modules],
-                          headers=['Module', 'Size'],
+    total = sum([m[1] for m in modules])
+    logging.info(tabulate([(k, human_size(v), '%.2f %%' % (v * 100. / total)) for k, v in modules],
+                          headers=['Module', 'Size', '%'],
                           tablefmt='orgtbl'))
-    logging.info('Total: %s' % human_size(sum([m[1] for m in modules])))
+    logging.info('Total: %s' % human_size(total))
 
 if __name__ == '__main__':
     main()
