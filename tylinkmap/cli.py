@@ -1,5 +1,6 @@
 import argparse
 from .linkmap import LinkMap
+from tabulate import tabulate
 
 
 def main(argv=None):
@@ -12,8 +13,7 @@ def main(argv=None):
     link_map.paring(args.file)
     modules = [(k, v) for k, v in link_map.analyze().items()]
     modules.sort(key=lambda tup: tup[1], reverse=args.desc)
-    for (m, s) in modules:
-        print m, link_map.human_size(s)
+    print tabulate([(k, link_map.human_size(v)) for k, v in modules], headers=['Module', 'Size'], tablefmt='orgtbl')
     # for obj in link_map.file_objs:
     #     print obj
     # for section in link_map.sections:
