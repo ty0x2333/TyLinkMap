@@ -47,10 +47,11 @@ def main(argv=None):
     with Timer() as t:
         modules = [(k, v) for k, v in link_map.analyze().items()]
         modules.sort(key=lambda tup: tup[1], reverse=args.desc)
-    logging.info('Result')
+    logging.debug('Result')
     logging.info(tabulate([(k, human_size(v)) for k, v in modules],
                           headers=['Module', 'Size'],
                           tablefmt='orgtbl'))
+    logging.info('Total: %s' % human_size(sum([m[1] for m in modules])))
     # for obj in link_map.file_objs:
     #     print obj
     # for section in link_map.sections:
