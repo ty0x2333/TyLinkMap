@@ -1,6 +1,23 @@
 import argparse
 from .linkmap import LinkMap
 from tabulate import tabulate
+import time
+
+
+class Timer(object):
+    def __init__(self, verbose=False):
+        self.verbose = verbose
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.secs = self.end - self.start
+        self.m_secs = self.secs * 1000  # millisecs
+        if self.verbose:
+            print 'elapsed time: %d ms' % self.m_secs
 
 
 def main(argv=None):
@@ -10,9 +27,14 @@ def main(argv=None):
     args = parser.parse_args(argv)
 
     link_map = LinkMap()
-    link_map.paring(args.file)
-    modules = [(k, v) for k, v in link_map.analyze().items()]
-    modules.sort(key=lambda tup: tup[1], reverse=args.desc)
+    print 'Parsing'
+    with Timer(True) as t:
+        link_map.paring(args.file)
+    print 'Analyze'
+    with Timer(True) as t:
+        modules = [(k, v) for k, v in link_map.analyze().items()]
+        modules.sort(key=lambda tup: tup[1], reverse=args.desc)
+    print 'Result'
     print tabulate([(k, link_map.human_size(v)) for k, v in modules], headers=['Module', 'Size'], tablefmt='orgtbl')
     # for obj in link_map.file_objs:
     #     print obj
