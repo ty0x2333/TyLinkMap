@@ -69,7 +69,7 @@ class LinkMap(object):
     def paring(self, filename):
         self.__module_map = {}
         with open(filename, 'r') as f:
-            for l in f:
+            for idx, l in enumerate(f):
                 line = l.strip()
                 if not line:
                     continue
@@ -80,7 +80,7 @@ class LinkMap(object):
                 if self.last_block == BLOCK_OBJECT_FILES:
                     match = self._obj_compiler.match(line)
                     if not match:
-                        # print 'Warning: can not match object file!'
+                        logging.warning('can not match object file:[line %d] %s' % (idx, line))
                         continue
 
                     num = int(match.group('num'))
@@ -99,20 +99,20 @@ class LinkMap(object):
                     self.__module_map[num] = module
                 elif self.last_block == BLOCK_SESSION:
                     match = self._session_compiler.match(line)
-                    if match:
-                        section = Section(address=match.group('address'), size=match.group('size'),
-                                          segment=match.group('segment'), section=match.group('section'))
-                        self.sections.append(section)
-                    else:
-                        logging.warning('Parse error: %s' % line)
+                    if not match:
+                        logging.warning('can not match session:[line %d] %s' % (idx, line))
+                        continue
+                    section = Section(address=match.group('address'), size=match.group('size'),
+                                      segment=match.group('segment'), section=match.group('section'))
+                    self.sections.append(section)
                 elif self.last_block == BLOCK_SYMBOLS:
                     match = self._symbol_compiler.match(line)
-                    if match:
-                        symbol = Symbol(address=match.group('address'), size=int(match.group('size'), 16),
-                                        file_number=int(match.group('file')), name=match.group('name'))
-                        self.symbols.append(symbol)
-                    else:
-                        logging.warning('Parse error: %s' % line)
+                    if not match:
+                        logging.warning('can not match symbol:[line %d] %s' % (idx, line))
+                        continue
+                    symbol = Symbol(address=match.group('address'), size=int(match.group('size'), 16),
+                                    file_number=int(match.group('file')), name=match.group('name'))
+                    self.symbols.append(symbol)
 
     def __paring_block(self, line):
         match = self._block_compiler.match(line)
