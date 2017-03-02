@@ -87,13 +87,18 @@ class LinkMap(object):
                     content = match.group('content')
                     # filename
                     content_match = self._obj_content_compiler.match(content)
-                    module = self.target_name
                     if content_match:
                         filename = content_match.group('filename')
                         path = content_match.group('path')
                         module = os.path.basename(path)
                     else:
                         filename = os.path.basename(content)
+                        if 'Xcode.app/Contents/Developer' in content:
+                            module = 'System'
+                        elif 'Carthage/Build' in content:
+                            module = os.path.basename(content)
+                        else:
+                            module = self.target_name
 
                     self.file_objs.append(FileObject(module=module, number=num, filename=filename))
                     self.__module_map[num] = module
