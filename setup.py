@@ -1,5 +1,10 @@
 """
-TyLinkMap
+   _____         __ _       _
+  /__   \_   _  / /(_)_ __ | | __ /\/\   __ _ _ __
+    / /\/ | | |/ / | | '_ \| |/ //    \ / _` | '_ \
+   / /  | |_| / /__| | | | |   </ /\/\ \ (_| | |_) |
+   \/    \__, \____/_|_| |_|_|\_\/    \/\__,_| .__/
+         |___/                               |_|
 
 See:
 https://packaging.python.org/en/latest/distributing.html
@@ -64,7 +69,7 @@ setup(
     ],
 
     # What does your project relate to?
-    keywords=['linkmap', 'iOS', 'package-size', 'analytic'],
+    keywords=['linkmap', 'iOS', 'package-size', 'analyze'],
 
     # You can just specify the packages manually here if your project is
     # simple. Or you can use find_packages().
