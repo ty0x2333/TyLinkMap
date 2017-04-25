@@ -10,6 +10,8 @@
 
 link map tool for iOS / macOS developers
 
-|license|
+|license| |codebeat|
 
 .. |license| image:: https://img.shields.io/github/license/luckytianyiyan/TyLinkMap.svg?maxAge=2592000
+.. |codebeat| image:: https://codebeat.co/badges/c8a8df0b-2623-4d38-8f36-c88f8e872df7
+   :target: https://codebeat.co/projects/github-com-luckytianyiyan-tylinkmap-master
